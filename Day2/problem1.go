@@ -53,7 +53,7 @@ func main() {
 
 				switch color {
 				case "red":
-					if count > redCount{
+					if count > redCount {
 						redCount = count
 					}
 					break
