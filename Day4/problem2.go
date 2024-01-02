@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -19,7 +20,8 @@ func main() {
 
 	inputScanner := bufio.NewScanner(inputFile)
 	inputScanner.Split(bufio.ScanLines)
-	cardScores := []int{}
+
+	sum := 0
 
 	for inputScanner.Scan() {
 		line := inputScanner.Text()
@@ -43,39 +45,20 @@ func main() {
 		for _, num := range strings.Split(strings.Trim(numbers[1], " "), " ") {
 			if intNum, err := strconv.Atoi(num); err == nil {
 
+				// fmt.Println(intNum)
 				if winningNumbersMap[intNum] {
 					winningNumbers = append(winningNumbers, intNum)
 				}
 			}
 		}
 
-		score := len(winningNumbers)
-		cardScores = append(cardScores, score)
-	}
-
-	fmt.Printf("initial card scores array: %v\n", cardScores)
-
-	// count original cards
-	sum := len(cardScores)
-	// cardScores[len(cardScores)-1] = 1
-
-	// loop through in reverse to avoid unneccessary recursion
-	for i := len(cardScores) - 2; i >= 0; i-- {
-
-		fmt.Printf("Card %d with %d -> ", i+1, cardScores[i])
-
-		duplicates := cardScores[i]
-		// count the winnings duplicates
-		for j := 1; j <= cardScores[i] && i+j < len(cardScores); j++ {
-			duplicates += cardScores[i+j]
-			// fmt.Printf(" + %d", cardScores[i+j])
+		if score := 0; len(winningNumbers) > 0 {
+			exp := float64(len(winningNumbers) - 1)
+			score = int(math.Pow(2.0, exp))
+			sum += score
+			fmt.Printf("%s:\twinning numbers: %v\t| score: %d \t| matched numbers: %v\n", splitLine[0], winningNumbersMap, score, winningNumbers)
 		}
-		cardScores[i] = duplicates
-		fmt.Printf("%d\n", cardScores[i])
-
-		sum += cardScores[i]
 	}
 
-	// fmt.Printf("final card scores array: %v\n", cardScores)
 	fmt.Printf("total sum: %d\n", sum)
 }
