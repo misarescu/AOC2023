@@ -9,11 +9,6 @@ import (
 
 var maxSteps int
 
-type Location struct {
-	line int
-	col  int
-}
-
 func CheckNeighbour(stepsMap [][]int, restrictionsMap []string, currLine, currCol, nextLine, nextCol int) bool {
 	if nextLine < 0 || nextCol < 0 || nextLine >= len(stepsMap) || nextCol >= len(stepsMap[0]) {
 		return false
