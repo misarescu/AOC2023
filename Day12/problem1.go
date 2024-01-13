@@ -4,42 +4,78 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
 
-func IsFinish(springs []rune, validationNumbers []int, pos int) bool {
-	indeces := []int{}
-	findPos := 0
-	for _, num := range validationNumbers {
-		validationStr := ""
-		for i := 0; i < num; i++ {
-			validationStr += "#"
-		}
-		idx := strings.Index(string(springs)[findPos:], validationStr)
-		if idx < 0 {
-			return false
-		}
-		findPos = idx + len(validationStr)
-		indeces = append(indeces, idx)
+var validCount int
+
+func IsFinish(targets []*rune, springs []rune, validationNumbers []int, pos int) bool {
+	if pos != len(targets)-1 {
+		return false
 	}
 
-	return sort.IntsAreSorted(indeces)
+	counts := []int{}
+	// isCounting := false
+	currentCount := 0
+
+	for _, s := range springs {
+		if s == '#' {
+			currentCount++
+		} else {
+			if currentCount > 0 {
+				counts = append(counts, currentCount)
+				currentCount = 0
+			}
+
+		}
+	}
+
+	if currentCount > 0 {
+		counts = append(counts, currentCount)
+		currentCount = 0
+	}
+
+	// fmt.Printf("counts: %v\n", counts)
+
+	if len(counts) != len(validationNumbers) {
+		return false
+	}
+
+	for i := 0; i < len(counts); i++ {
+		if counts[i] != validationNumbers[i] {
+			return false
+		}
+	}
+
+	fmt.Printf("combination: %s\tcounts: %v\n", string(springs), counts)
+	return true
+	// return sort.IntsAreSorted(indeces)
 }
 
 func IsValid(targets []*rune, validationNumbers []int, pos int) bool {
 	return true
 }
 
-func ComputeCombinations(targets []*rune, springs []rune, validationNumbers []int) int {
-	pos := 0
-	validCount := 0
-
+func ComputeCombinations(targets []*rune, springs []rune, validationNumbers []int, pos int, validCount *int) {
+	// fmt.Printf("pos:%d\n", pos)
+	if pos < len(targets) {
+		for _, value := range ".#" {
+			*targets[pos] = value
+			if IsValid(targets, validationNumbers, pos) {
+				if IsFinish(targets, springs, validationNumbers, pos) {
+					// fmt.Printf("combination: %s\n", string(springs))
+					*validCount++
+				} else {
+					ComputeCombinations(targets, springs, validationNumbers, pos+1, validCount)
+				}
+			}
+		}
+	}
 }
 
 func main() {
-	inputFile, err := os.Open("day12.input.demo1")
+	inputFile, err := os.Open("day12.input.official")
 	defer inputFile.Close()
 
 	if err != nil {
@@ -62,7 +98,6 @@ func main() {
 			springs = append(springs, char)
 		}
 		strings.Split(lineTokens[0], "")
-		arrCount := 1
 
 		for _, numStr := range strings.Split(lineTokens[1], ",") {
 			if numInt, err := strconv.Atoi(numStr); err == nil {
@@ -78,9 +113,11 @@ func main() {
 			}
 		}
 
-		sum += arrCount
 		fmt.Printf("map: %s\tnumbers:%v\n", string(springs), numbers)
-
+		validCount := 0
+		ComputeCombinations(targets, springs, numbers, 0, &validCount)
+		fmt.Printf("valid count: %d\n", validCount)
+		sum += validCount
 	}
 
 	fmt.Printf("total sum: %d\n", sum)
